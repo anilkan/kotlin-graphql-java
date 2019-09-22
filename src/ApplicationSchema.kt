@@ -58,10 +58,9 @@ var safeDataFetcher = object : DataFetcher<Safe> {
     override fun get(environment: DataFetchingEnvironment): Safe {
         // TODO : Gereksiz şeyler
 
-        val selectedFields = environment.mergedField.fields
-            .singleOrNull{ it.name == "Safe" }!!.selectionSet.selections as ArrayList<Field>
-
-        val selectedTableFields = Safes.columns.filter { t -> selectedFields.any() { c -> c.name == t.name } }
+        val selectedTableFields = Safes.columns.filter {
+                t -> environment.selectionSet.fields.any() { c -> c.name == t.name }
+        }
 
         return SafeRepository.getElement(environment.getArgument("id"), selectedTableFields)
     }
