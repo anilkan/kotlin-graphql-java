@@ -3,30 +3,25 @@ package xyz.anilkan
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.transaction
-import xyz.anilkan.repository.Safes
+import org.postgresql.util.PGobject
+import org.flywaydb.core.Flyway
 
-fun <T> transactionEnviroment(closure: () -> T): T {
+
+
+// FIXME: Başka bir isim veya yöntem bulmalı
+fun <T> transactionEnvironment(closure: () -> T): T {
     return transaction { closure() }
-}
-
-// TODO: FlyWay ile db versioning yapılmalı
-fun createTables() {
-    transactionEnviroment {
-        SchemaUtils.create(Safes)
-        val safeId = Safes.insert {
-            it[code] = "K1"
-            it[name] = "Kasa 1"
-            it[balance] = 0.0
-        } get Safes.id
-    }
 }
 
 // TODO: Uygulama başladıktan sonra otomatik çağırılmalı
 fun connectDatabase() {
-    Database.connect(hikari())
+    val datasource = hikari()
+    Database.connect(datasource)
+
+    val flyway = Flyway.configure().dataSource(datasource).load()
+    flyway.clean()
+    flyway.migrate()
 }
 
 private fun hikari(): HikariDataSource {
@@ -40,4 +35,11 @@ private fun hikari(): HikariDataSource {
     config.transactionIsolation = "TRANSACTION_REPEATABLE_READ"
     config.validate()
     return HikariDataSource(config)
+}
+
+class PGEnum<T : Enum<T>>(enumTypeName: String, enumValue: T?) : PGobject() {
+    init {
+        value = enumValue?.name
+        type = enumTypeName
+    }
 }

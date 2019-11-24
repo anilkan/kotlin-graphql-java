@@ -38,5 +38,6 @@ dependencies {
     compile "org.postgresql:postgresql:$postgresql_version"
     compile "com.zaxxer:HikariCP:$hikaricp_version"
     compile "com.graphql-java:graphql-java:$graphql_version"
+    compile "org.flywaydb:flyway-core:$flyway_version"
     testCompile "io.ktor:ktor-server-tests:$ktor_version"
 }

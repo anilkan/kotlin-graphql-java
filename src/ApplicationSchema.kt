@@ -2,7 +2,6 @@ package xyz.anilkan
 
 import graphql.GraphQL
 import graphql.Scalars.*
-import graphql.language.Field
 import graphql.schema.*
 import graphql.schema.idl.RuntimeWiring
 import graphql.schema.idl.SchemaGenerator
@@ -11,40 +10,44 @@ import graphql.schema.GraphQLArgument.newArgument
 import graphql.schema.GraphQLCodeRegistry.newCodeRegistry
 import graphql.schema.GraphQLFieldDefinition.newFieldDefinition
 import graphql.schema.GraphQLObjectType.newObject
-import xyz.anilkan.model.Safe
-import xyz.anilkan.repository.SafeRepository
-import xyz.anilkan.repository.Safes
+import graphql.schema.idl.TypeDefinitionRegistry
+import xyz.anilkan.model.*
+import java.io.File
 
+/*
+const val schema : String = "type Query{hello: String}"
 
-val schema : String = "type Query{hello: String}"
+val typeDefinitionRegistry: TypeDefinitionRegistry = SchemaParser().parse(schema)
 
-val typeDefinitionRegistry = SchemaParser().parse(schema)
-
-val runtimeWiring = RuntimeWiring.newRuntimeWiring()
-    .type("Query", { t -> t.dataFetcher("hello", StaticDataFetcher("world")) })
+val runtimeWiring: RuntimeWiring = RuntimeWiring.newRuntimeWiring()
+    .type("Query") { t -> t.dataFetcher("hello", StaticDataFetcher("world")) }
     .build()
 
-val graphQLSchema =
+val graphQLSchema: GraphQL =
     GraphQL.newGraphQL(SchemaGenerator().makeExecutableSchema(typeDefinitionRegistry, runtimeWiring))
         .build()
-
-val safeType = newObject()
+*/
+val safeType: GraphQLObjectType = newObject()
     .name("Safe")
-    .field(GraphQLFieldDefinition.newFieldDefinition()
+    .field(
+        newFieldDefinition()
         .name("id")
         .type(GraphQLInt))
-    .field(GraphQLFieldDefinition.newFieldDefinition()
+    .field(
+        newFieldDefinition()
         .name("code")
         .type(GraphQLString))
-    .field(GraphQLFieldDefinition.newFieldDefinition()
+    .field(
+        newFieldDefinition()
         .name("name")
         .type(GraphQLString))
-    .field(GraphQLFieldDefinition.newFieldDefinition()
+    .field(
+        newFieldDefinition()
         .name("balance")
         .type(GraphQLBigDecimal))
     .build()
 
-val queryType = newObject()
+val safeQueryType: GraphQLObjectType = newObject()
     .name("QueryType")
     .field(newFieldDefinition()
         .name("Safe")
@@ -54,27 +57,77 @@ val queryType = newObject()
             .type(GraphQLInt)))
     .build()
 
-var safeDataFetcher = object : DataFetcher<Safe> {
-    override fun get(environment: DataFetchingEnvironment): Safe {
-        // TODO : Gereksiz şeyler
+var safeDataFetcher = DataFetcher<Safe> { environment ->
+    // TODO : Gereksiz şeyler
 
-        val selectedTableFields = Safes.columns.filter {
-                t -> environment.selectionSet.fields.any() { c -> c.name == t.name }
-        }
-
-        return SafeRepository.getElement(environment.getArgument("id"), selectedTableFields)
+    val selectedTableFields = Safes.columns.filter {
+            t -> environment.selectionSet.fields.any() { c -> c.name == t.name }
     }
+
+    SafeRepository.find(environment.getArgument("id"))
 }
 
-var codeRegistry = newCodeRegistry()
+var safeCodeRegistry: GraphQLCodeRegistry = newCodeRegistry()
     .dataFetcher(
         FieldCoordinates.coordinates("QueryType", "Safe"), safeDataFetcher
     )
     .build()
 
-var graphQLSchemaIki = GraphQL.newGraphQL(
-    GraphQLSchema.newSchema()
-        .query(queryType)
-        .codeRegistry(codeRegistry)
+// Firm
+val firmType: GraphQLObjectType = newObject()
+    .name("Firm")
+    .field(
+        newFieldDefinition()
+            .name("id")
+            .type(GraphQLInt))
+    .field(
+        newFieldDefinition()
+            .name("name")
+            .type(GraphQLString))
+    .build()
+
+val firmQueryType: GraphQLObjectType = newObject()
+    .name("QueryType")
+    .field(newFieldDefinition()
+        .name("Firm")
+        .type(firmType)
+        .argument(newArgument()
+            .name("id")
+            .type(GraphQLInt)))
+    .build()
+
+var firmDataFetcher = DataFetcher<Firm> { environment ->
+    FirmRepository.find(environment.getArgument("id"))
+}
+
+var firmCodeRegistry: GraphQLCodeRegistry = newCodeRegistry()
+    .dataFetcher(
+        FieldCoordinates.coordinates("QueryType", "Firm"), firmDataFetcher
+    )
+    .build()
+
+
+var graphQLSchemaIki: GraphQL = GraphQL.newGraphQL(
+    GraphQLSchema.newSchema(
+        GraphQLSchema.newSchema()
+            .query(safeQueryType)
+            .codeRegistry(safeCodeRegistry).build()
+    )
+        .query(firmQueryType)
+        .codeRegistry(firmCodeRegistry)
         .build()
 ).build()
+
+val schema : String = File("/home/anil/IdeaProjects/ktor-java-graphql/resources/schema.graphql").readText(Charsets.UTF_8)
+
+val typeDefinitionRegistry: TypeDefinitionRegistry = SchemaParser().parse(schema)
+
+val runtimeWiring: RuntimeWiring = RuntimeWiring.newRuntimeWiring()
+    .type("Query") { t -> t.dataFetcher("hello", StaticDataFetcher("world")) }
+    .type("Query") {t -> t.dataFetcher("Safe", safeDataFetcher)}
+    .type("Query") {t-> t.dataFetcher("Firm", firmDataFetcher)}
+    .build()
+
+val graphQLSchema: GraphQL =
+    GraphQL.newGraphQL(SchemaGenerator().makeExecutableSchema(typeDefinitionRegistry, runtimeWiring))
+        .build()

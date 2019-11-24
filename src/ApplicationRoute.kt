@@ -26,7 +26,7 @@ fun Routing.graphql () {
         val variables = if (req.variables == null) null
         else jacksonObjectMapper().writeValueAsString(req.variables)
 
-        call.respond(graphQLSchemaIki.execute(query))
+        call.respond(graphQLSchema.execute(query))
 //        val res = schema.runCatching {
 //            execute(query, variables)
 //        }
