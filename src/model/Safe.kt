@@ -5,7 +5,7 @@ import xyz.anilkan.transactionEnvironment
 
 data class Safe(override val id: Int = 0, val code: String, val name: String, val balance: Double = 0.0) : ModelBase
 
-public object Safes : Table("safes") {
+object Safes : Table("safes") {
     val id: Column<Int> = integer("id").autoIncrement().primaryKey()
     val code: Column<String> = varchar("code", 24)
     val name: Column<String> = varchar("name", 255)

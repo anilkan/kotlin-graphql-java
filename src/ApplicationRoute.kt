@@ -22,22 +22,11 @@ fun Routing.graphql () {
 
     post("/graphql") {
         val req = call.receive<GraphQLRequest>()
-        val query = req.query
-        //val variables = if (req.variables == null) null else jacksonObjectMapper().writeValueAsString(req.variables)
+        val result =
+            if (req.variables == null) graphQLSchema.execute(ExecutionInput.newExecutionInput().query(req.query))
+            else graphQLSchema.execute(ExecutionInput.newExecutionInput().query(req.query).variables(req.variables))
 
-        call.respond(graphQLSchema.execute(ExecutionInput.newExecutionInput().query(query).variables(req.variables)))
-//        val res = schema.runCatching {
-//            execute(query, variables)
-//        }
-//
-//        val response = res.fold(onSuccess = { it }, onFailure = {
-//            """
-//                {
-//                    "errors": "${it.message}"
-//                }
-//            """.trimIndent()
-//        })
-//
-//        call.respond(response)
+        call.respond(result)
+
     }
 }

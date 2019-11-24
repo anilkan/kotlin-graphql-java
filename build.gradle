@@ -13,6 +13,7 @@ apply plugin: 'application'
 
 group 'xyz.anilkan'
 version '0.0.1'
+
 mainClassName = "io.ktor.server.netty.EngineMain"
 
 sourceSets {
