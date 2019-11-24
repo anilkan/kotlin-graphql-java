@@ -1,6 +1,6 @@
 package xyz.anilkan
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import graphql.ExecutionInput
 import io.ktor.application.call
 import io.ktor.request.receive
 import io.ktor.response.respond
@@ -23,10 +23,9 @@ fun Routing.graphql () {
     post("/graphql") {
         val req = call.receive<GraphQLRequest>()
         val query = req.query
-        val variables = if (req.variables == null) null
-        else jacksonObjectMapper().writeValueAsString(req.variables)
+        //val variables = if (req.variables == null) null else jacksonObjectMapper().writeValueAsString(req.variables)
 
-        call.respond(graphQLSchema.execute(query))
+        call.respond(graphQLSchema.execute(ExecutionInput.newExecutionInput().query(query).variables(req.variables)))
 //        val res = schema.runCatching {
 //            execute(query, variables)
 //        }

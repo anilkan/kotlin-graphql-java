@@ -1,16 +1,41 @@
 type Query {
-  Safe(id: Int): Safe
-  Firm(id: Int): Firm
+    Safe(id: Int): Safe
+    Firm(id: Int): Firm
+    Expense(id: Int): Expense
+}
+
+type Mutation {
+    createSafe(code: String!, name: String!, balance: Float): Safe
+    createFirm(name: String!): Firm
+    createExpense(from: SafeInput, to: FirmInput): Expense
 }
 
 type Safe {
-  id: Int
-  code: String
-  name: String
-  balance: BigDecimal
+    id: Int
+    code: String
+    name: String
+    balance: Float
 }
 
 type Firm {
-  id: Int
-  name: String
+    id: Int
+    name: String
+}
+
+type Expense {
+    id: Int
+    from: Safe
+    to: Firm
+}
+
+input SafeInput {
+    id: Int
+    code: String
+    name: String
+    balance: Float
+}
+
+input FirmInput {
+    id: Int
+    name: String
 }

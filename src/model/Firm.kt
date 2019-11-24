@@ -1,9 +1,6 @@
 package xyz.anilkan.model
 
-import org.jetbrains.exposed.sql.Column
-import org.jetbrains.exposed.sql.ResultRow
-import org.jetbrains.exposed.sql.Table
-import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.*
 import xyz.anilkan.transactionEnvironment
 
 data class Firm(override val id: Int = 0, val name: String) : ModelBase
@@ -24,5 +21,11 @@ object FirmRepository {
             .select { Firms.id eq id }
             .map { x -> Firms.toDataObj(x) }
             .first()
+    }
+
+    fun add(firm: Firm): Int = transactionEnvironment {
+        Firms.insert {
+            it[name] = firm.name
+        } get Firms.id
     }
 }

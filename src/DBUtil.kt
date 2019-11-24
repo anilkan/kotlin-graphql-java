@@ -2,11 +2,10 @@ package xyz.anilkan
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.postgresql.util.PGobject
-import org.flywaydb.core.Flyway
-
 
 
 // FIXME: Başka bir isim veya yöntem bulmalı
@@ -20,7 +19,7 @@ fun connectDatabase() {
     Database.connect(datasource)
 
     val flyway = Flyway.configure().dataSource(datasource).load()
-    flyway.clean()
+    //flyway.clean()
     flyway.migrate()
 }
 
